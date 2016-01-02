@@ -1,18 +1,22 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : NetworkBehaviour {
 
-    private Vector3 targetPosition, velocity = Vector3.zero;
+    private Vector3 targetPosition;
 
     public Rigidbody2D MyRigidbody2D;
 
-    public float MaxSpeed = 5f;
+    public GameObject ShurikenPrefab;
 
+    private GameObject shurikenClone;
+    //private bool attacking;
+    private Vector2 shurikenVelo;
     // Use this for initialization
     void Start () {
-	
+        //attacking = false;
 	}
 	
 	// Update is called once per frame
@@ -30,12 +34,20 @@ public class PlayerController : NetworkBehaviour {
             targetPosition = new Vector3(ray.origin.x, ray.origin.y, transform.position.z);
         }
 
-        transform.position = Vector3.MoveTowards(transform.position, targetPosition, Time.deltaTime);
-        // other way to move
-        //transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime * 1);
-        //transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref velocity, MaxSpeed);
-
-
-
+        transform.position = Vector3.MoveTowards(transform.position, targetPosition, Time.deltaTime * 5);
+    }
+    void OnCollisionEnter2D(Collision2D other)
+    {
+        if (other.gameObject.tag == "Weapon")
+        {
+            //gameObject.SetActive(false);
+        }
+    }
+    [Command]
+    void CmdAttack(Vector3 pos)
+    {
+        GameObject shurikenClone = (GameObject)Instantiate(ShurikenPrefab, transform.position, transform.rotation);
+        shurikenClone.transform.position = Vector3.MoveTowards(transform.position, targetPosition, Time.deltaTime * 5);
+        NetworkServer.Spawn(shurikenClone);
     }
 }
